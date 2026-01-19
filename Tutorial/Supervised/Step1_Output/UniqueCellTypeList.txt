@@ -1,0 +1,17 @@
+MF_2
+CD4T
+CD8T
+MF_1
+Mesenchymal/SMA
+Other
+CD11c-high
+Tumor/Keratin
+Tumor/EGFR
+DC
+NK
+Epithelial
+Endothelial/Vim
+Neutrophil
+Treg
+MF/Glia
+B
