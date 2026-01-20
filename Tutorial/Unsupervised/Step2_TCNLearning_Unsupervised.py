@@ -23,7 +23,7 @@ Num_TCN = 9
 Num_Run = 20 
 Num_Epoch = 3000 
 Embedding_Dimension = 128
-Learning_Rate = 0.0005 #之前0.0001,但是0.0001会导致结果只有3种细胞
+Learning_Rate = 0.0005 #之前0.0001,0.0001会导致结果只有3种细胞
 #Loss_Cutoff = -0.6
 Max_Retries = 3       # 设置最大重试次数，防止无限死循环
 
@@ -92,8 +92,7 @@ class Net(torch.nn.Module):
 def train(epoch):
     model.train()
     loss_all = 0
-    mc_all = 0
-    o_all = 0
+
 
     for data in train_loader:
         data = data.to(device)
@@ -104,7 +103,7 @@ def train(epoch):
         loss.backward()
         loss_all += loss.item()
         optimizer.step()
-    return loss_all, mc_all, o_all
+    return loss_all# mc_all, o_all
 
 
 # Extract a single graph for TCN learning.
@@ -134,7 +133,7 @@ while run_number <= Num_Run:  #Generate multiple independent runs for ensemble.
     
     filename_0 = RunFolderName + "/Epoch_UnsupervisedLoss.csv"
     ## 增加列
-    headers_0 = ["Epoch", "UnsupervisedLoss", "MinCutLoss", "OrthoLoss"]
+    headers_0 = ["Epoch", "UnsupervisedLoss"]
     with open(filename_0, "w", newline='') as f0:
         f0_csv = csv.writer(f0)
         f0_csv.writerow(headers_0)
@@ -142,16 +141,16 @@ while run_number <= Num_Run:  #Generate multiple independent runs for ensemble.
     previous_loss = float("inf")  #Initialization.
     for epoch in range(1, Num_Epoch+1):  #Specify the number of epoch in each independent run.
         # 【修改点2】接收三个返回值
-        train_loss, mc, o = train(epoch)
+        train_loss = train(epoch)
         # 每100个epoch打印一次，观察数值
         if epoch % 100 == 0 or epoch == 1:
-            print(f"Epoch: {epoch:03d}, Total: {train_loss:.4f}, MC: {mc:.4f}, Ortho: {o:.4f}")
+            print(f"Epoch: {epoch:03d}, Total: {train_loss:.4f}")
 
         #print(f"Epoch: {epoch:03d}, Train Loss: {train_loss:.4f}")
         # 【修改点3】写入 CSV 时也要把 mc 和 o 写进去，不然和 Header 对不上
         with open(filename_0, "a", newline='') as f0:
             f0_csv = csv.writer(f0)
-            f0_csv.writerow([epoch, train_loss, mc, o])
+            f0_csv.writerow([epoch, train_loss])
         
         if train_loss == 0 and train_loss == previous_loss:  #If two consecutive losses are both zeros, the learning gets stuck.
             break  #stop the training.
